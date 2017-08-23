@@ -1,0 +1,26 @@
+version: '2'
+services:
+  ecs-agent:
+    image: amazon/amazon-ecs-agent:v1.14.1
+    environment:
+      - ECS_LOGFILE=/log/ecs-agent.log
+      - ECS_DATADIR=/data
+      - ECS_CLUSTER=${CLUSTER}
+      - HTTP_PROXY=http://localhost:3128
+      - HTTPS_PROXY=http://localhost:3128
+      - NO_PROXY=169.254.169.254,/var/run/docker.sock
+      - ECS_INSTANCE_ATTRIBUTES={"main":"y","always":"no"}
+      - ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","fluentd","gelf","journald","syslog","awslogs"]
+      - ECS_LOGLEVEL=debug
+      - ECS_RESERVED_PORTS=[22, 23, 5000, 51678, 51679]
+      - ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=3h
+      - ECS_IMAGE_CLEANUP_INTERVAL=3h
+      - ECS_IMAGE_MINIMUM_CLEANUP_AGE=3h
+      - ECS_NUM_IMAGES_DELETE_PER_CYCLE=10
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log/ecs/:/log
+      - /var/lib/ecs/data:/data
+      - /var/run:/var/run
+      - /var/cache/ecs:/var/cache/ecs
+    network_mode: host
