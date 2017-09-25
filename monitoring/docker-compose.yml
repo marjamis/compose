@@ -48,7 +48,7 @@ services:
     volumes:
       # Not read-only due to an issue with grafana: https://github.com/grafana/grafana-docker/issues/51
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
-      - /media/sharea/data/grafana:/var/lib/grafana
+      - ${GRAFANA_DATA_LOCAL}:/var/lib/grafana
     # environment:
     #   - GF_INSTALL_PLUGINS=grafana-simple-json-datasource
     networks:
