@@ -1,7 +1,9 @@
-version: '2'
+version: '3.3'
+
 services:
   ecs-agent:
-    image: amazon/amazon-ecs-agent:v1.14.1
+    image: amazon/amazon-ecs-agent:v1.14.4
+    container_name: ecs-agent
     environment:
       - ECS_LOGFILE=/log/ecs-agent.log
       - ECS_DATADIR=/data

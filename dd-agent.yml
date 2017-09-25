@@ -1,7 +1,9 @@
-version: '2'
+version: '3.3'
+
 services:
   dd:
     image: datadog/docker-dd-agent:latest
+    container_name: datadog
     hostname: main
     environment:
       - API_KEY=${API_KEY}

@@ -1,0 +1,5 @@
+job_service:rpc_durations_seconds_count:avg_rate5m = avg(rate(rpc_durations_seconds_count[5m])) by (job, service)
+downed_hosts:up = count(up==0)
+
+ALERT downed_hosts
+  IF downed_hosts:up >= 1

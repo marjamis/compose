@@ -1,0 +1,59 @@
+version: '3.3'
+
+services:
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    restart: always
+    volumes:
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
+    networks:
+      - general
+    extra_hosts:
+      - ${SMTP_HOST}:smtp
+    command: [ "-config.file=/etc/alertmanager/config.yml", "-storage.path=/alertmanager", "-log.level=debug" ]
+  node:
+    image: prom/node-exporter
+    restart: always
+    ports:
+      - 9100:9100
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    network_mode: host
+    command: [ "quay.io/prometheus/node-exporter", --collector.procfs /host/proc", --collector.sysfs /host/sys", --collector.filesystem.ignored-mount-points", "^/(sys|proc|dev|host|etc)" ]
+  prometheus:
+    depends_on:
+      - alertmanager
+    image: prom/prometheus
+    restart: always
+    ports:
+      - 9090:9090
+    links:
+      - alertmanager:alertmanager
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules/:/etc/prometheus/rules/:ro
+      - ${PROMETHEUS_CONSOLES}:/usr/share/prometheus/consoles
+    networks:
+      - general
+    command: [ "-config.file=/etc/prometheus/prometheus.yml", "-storage.local.path=/data/",  "-web.console.libraries=/usr/share/prometheus/console_libraries", "-web.console.templates=/usr/share/prometheus/consoles", "-alertmanager.url=alertmanager:9093" ]
+  graphana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      # Not read-only due to an issue with grafana: https://github.com/grafana/grafana-docker/issues/51
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - /media/sharea/data/grafana:/var/lib/grafana
+    # environment:
+    #   - GF_INSTALL_PLUGINS=grafana-simple-json-datasource
+    networks:
+      - general
+
+networks:
+  general:
+    driver: bridge

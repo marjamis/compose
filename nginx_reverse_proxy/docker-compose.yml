@@ -1,0 +1,78 @@
+version: '3.3'
+
+services:
+  reverse_proxy:
+    depends_on:
+      - wekan
+      - owncloud
+    image: nginx:1.13.1-alpine
+    container_name: reverse_proxy
+    restart: always
+    volumes:
+     - ./nginx_configs/nginx.conf:/etc/nginx/nginx.conf:ro
+     - ${CERTS_LOCATION}:/certs/:ro
+     # Enabled sites
+     - ./nginx_configs/wekan.conf:/etc/nginx/sites-enabled/wekan.conf:ro
+     - ./nginx_configs/owncloud.conf:/etc/nginx/sites-enabled/owncloud.conf:ro
+     - ./nginx_configs/dokuwiki.conf:/etc/nginx/sites-enabled/dokuwiki.conf:ro
+    ports:
+     - 80:80
+     - 443:443
+    networks:
+      - general
+    extra_hosts:
+      - dokuwiki:${DOKUWIKI_HOST}
+  wekandb:
+    image: mongo:3.2.13
+    container_name: wekandb
+    restart: always
+    command: mongod --smallfiles --oplogSize 128
+    networks:
+      - general
+    expose:
+      - 27017
+    volumes:
+      - ${WEKAN_DB_LOCAL}:/data/db
+  wekan:
+    depends_on:
+      - wekandb
+    image: wekanteam/wekan:latest
+    container_name: wekan
+    restart: always
+    networks:
+      - general
+    ports:
+      - 80
+    environment:
+      - MONGO_URL=mongodb://wekandb:27017/wekan
+      - ROOT_URL=https://portal/wekan
+  ownclouddb:
+    image: mariadb
+    container_name: ownclouddb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${OWNCLOUD_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=owncloud
+    volumes:
+      - ${OWNCLOUD_DB_STORAGE_LOCAL}:/var/lib/mysql
+    ports:
+      - 3306
+    networks:
+      - general
+  owncloud:
+    depends_on:
+      - ownclouddb
+    image: owncloud
+    container_name: owncloud
+    restart: always
+    ports:
+      - 80
+    volumes:
+      - ${OWNCLOUD_CONFIG_FILE}:/var/www/html/config/config.php
+      - ${OWNCLOUD_STORAGE_LOCAL}:/var/www/html/data
+    networks:
+      - general
+
+networks:
+  general:
+    driver: bridge
