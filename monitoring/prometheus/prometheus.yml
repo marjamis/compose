@@ -9,8 +9,7 @@ alerting:
   alertmanagers:
     - static_configs:
       - targets:
-        - alertmanager
-      scheme: alertmanager
+        - alertmanager:9093
       timeout: 10s
 
 rule_files:

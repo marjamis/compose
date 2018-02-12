@@ -1,8 +1,5 @@
 global:
-  smtp_smarthost: smtp:25
-  smtp_from: exclusive.cipher+alertmanager@gmail.com
-  # smtp_auth_username: 'alertmanager'
-  # smtp_auth_password: 'password'
+  slack_api_url: <slack_url>
 
 # templates:
 # - '/etc/alertmanager/template/*.tmpl'
@@ -14,16 +11,15 @@ route:
   repeat_interval: 1h
   receiver: admin
 
-inhibit_rules:
-- source_match:
-    severity: critical
-  target_match:
-    severity: warning
-  equal: ['alertname', 'cluster', 'service']
+# inhibit_rules:
+# - source_match:
+#     severity: critical
+#   target_match:
+#     severity: warning
+#   equal: ['alertname', 'cluster', 'service']
 
 receivers:
 - name: admin
-  email_configs:
-    - from: exclusive.cipher+alertmanager@gmail.com
-      to: exclusive.cipher+alertmanager@gmail.com
-      send_resolved: true
+  slack_configs:
+    - send_resolved: true
+      channel: general
