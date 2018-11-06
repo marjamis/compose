@@ -2,11 +2,10 @@ version: '3.3'
 
 services:
   reverse_proxy:
-    image: nginx:1.13.8-alpine
+    image: nginx:1.15.5-alpine
     container_name: reverse_proxy
     depends_on:
       - wekan
-      - owncloud
       - dokuwiki
     restart: always
     volumes:
@@ -14,7 +13,6 @@ services:
      - ${CERTS_LOCATION}:/certs/:ro
      # Enabled sites
      - ./nginx_configs/wekan.conf:/etc/nginx/sites-enabled/wekan.conf:ro
-     - ./nginx_configs/owncloud.conf:/etc/nginx/sites-enabled/owncloud.conf:ro
      - ./nginx_configs/dokuwiki.conf:/etc/nginx/sites-enabled/dokuwiki.conf:ro
     ports:
      - 80:80
@@ -33,45 +31,21 @@ services:
     volumes:
       - ${WEKAN_DB_LOCAL}:/data/db
       - ${WEKAN_DUMP_LOCAL}:/data/db/dumps
+
   wekan:
     depends_on:
       - wekandb
-    image: wekanteam/wekan:v0.71
+    image: quay.io/wekan/wekan:v1.69
     container_name: wekan
     restart: always
     networks:
       - general
     expose:
-      - 80
+      - 8080
     environment:
       - MONGO_URL=mongodb://wekandb:27017/wekan
       - ROOT_URL=https://portal/wekan
-  ownclouddb:
-    image: mariadb:10.3.4
-    container_name: ownclouddb
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=${OWNCLOUD_DB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=owncloud
-    volumes:
-      - ${OWNCLOUD_DB_STORAGE_LOCAL}:/var/lib/mysql
-    expose:
-      - 3306
-    networks:
-      - general
-  owncloud:
-    depends_on:
-      - ownclouddb
-    image: owncloud:10.0.4-apache
-    container_name: owncloud
-    restart: always
-    expose:
-      - 80
-    volumes:
-      - ${OWNCLOUD_CONFIG_FILE}:/var/www/html/config/config.php
-      - ${OWNCLOUD_STORAGE_LOCAL}:/var/www/html/data
-    networks:
-      - general
+
   dokuwiki:
     build:
       context: ./dokuwiki
