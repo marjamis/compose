@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.7'
 
 services:
   reverse_proxy:
@@ -7,6 +7,7 @@ services:
     depends_on:
       - wekan
       - dokuwiki
+      - freshrss
     restart: always
     volumes:
      - ./nginx_configs/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -14,11 +15,13 @@ services:
      # Enabled sites
      - ./nginx_configs/wekan.conf:/etc/nginx/sites-enabled/wekan.conf:ro
      - ./nginx_configs/dokuwiki.conf:/etc/nginx/sites-enabled/dokuwiki.conf:ro
+     - ./nginx_configs/freshrss.conf:/etc/nginx/sites-enabled/freshrss.conf:ro
     ports:
      - 80:80
      - 443:443
     networks:
       - general
+
   wekandb:
     image: mongo:3.6.2
     container_name: wekandb
@@ -31,7 +34,6 @@ services:
     volumes:
       - ${WEKAN_DB_LOCAL}:/data/db
       - ${WEKAN_DUMP_LOCAL}:/data/db/dumps
-
   wekan:
     depends_on:
       - wekandb
@@ -58,6 +60,29 @@ services:
       - ${DOKUWIKI_STORAGE_LOCAL}/dokuwiki/conf:/var/www/html/dokuwiki/conf
     networks:
       - general
+
+  freshrss:
+    container_name: freshrss
+    image: freshrss/freshrss:latest
+    restart: always
+    logging:
+      options:
+        max-size: 10m
+    volumes:
+      - freshrss-data:/var/www/FreshRSS/data
+    environment:
+      CRON_MIN: "4,34"
+      TZ: Australia/Sydney
+    networks:
+      - general
+    expose:
+      - 80
+    # TODO Temporary measure until I have SAN certs and/or confirm any other required fixes the issues with apps access
+    ports:
+      - 8080:80
+
+volumes:
+  freshrss-data:
 
 networks:
   general:
