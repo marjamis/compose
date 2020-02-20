@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   reverse_proxy:
-    image: nginx:1.15.5-alpine
+    image: nginx:1.17.8-alpine
     container_name: reverse_proxy
     depends_on:
       - wekan
@@ -12,6 +12,8 @@ services:
     volumes:
      - ./nginx_configs/nginx.conf:/etc/nginx/nginx.conf:ro
      - ${CERTS_LOCATION}:/certs/:ro
+     # Default splash page
+     - ./nginx_configs/index.html:/usr/share/nginx/html/index.html:ro
      # Enabled sites
      - ./nginx_configs/wekan.conf:/etc/nginx/sites-enabled/wekan.conf:ro
      - ./nginx_configs/dokuwiki.conf:/etc/nginx/sites-enabled/dokuwiki.conf:ro
@@ -23,10 +25,10 @@ services:
       - general
 
   wekandb:
-    image: mongo:3.6.2
+    image: mongo:4.2.2
     container_name: wekandb
     restart: always
-    command: mongod --smallfiles --oplogSize 128
+    command: mongod --oplogSize 128
     networks:
       - general
     expose:
@@ -37,7 +39,7 @@ services:
   wekan:
     depends_on:
       - wekandb
-    image: quay.io/wekan/wekan:v1.69
+    image: quay.io/wekan/wekan:v3.79
     container_name: wekan
     restart: always
     networks:
@@ -45,7 +47,8 @@ services:
     expose:
       - 8080
     environment:
-      - MONGO_URL=mongodb://wekandb:27017/wekan
+      # . after URL required for proper npm DNS resolution... it seems
+      - MONGO_URL=mongodb://wekandb.:27017/wekan
       - ROOT_URL=https://portal/wekan
 
   dokuwiki:
@@ -63,7 +66,7 @@ services:
 
   freshrss:
     container_name: freshrss
-    image: freshrss/freshrss:latest
+    image: freshrss/freshrss:1.15.3-alpine
     restart: always
     logging:
       options:
