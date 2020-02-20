@@ -48,4 +48,4 @@ genClientCert: ## Generate a new client certificate
 	openssl pkcs12 -export -out $(CLI_PFX) -inkey $(CLI_KEY) -in $(CLI_CERT) -certfile $(CA_CRT)
 
 test: ## Once the website is up this test a sample endpoint which shouldn't have access
-	@if [ $(shell curl https://portal:8443/freshrss/ --resolve portal:8443:localhost -Lks -o /dev/null -w "%{http_code}") != 403 ] ; then echo "Unauthorised access."; exit 1; fi
+	@if [ $(shell curl https://portal/freshrss/ --resolve portal:443:localhost -Lks -o /dev/null -w "%{http_code}") != 403 ] ; then echo "Unauthorised access."; exit 1; fi
