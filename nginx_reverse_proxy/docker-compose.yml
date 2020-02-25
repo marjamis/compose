@@ -22,7 +22,8 @@ services:
      - 80:80
      - 443:443
     networks:
-      - general
+      - external
+      - internal
 
   wekandb:
     image: mongo:4.2.2
@@ -30,7 +31,7 @@ services:
     restart: always
     command: mongod --oplogSize 128
     networks:
-      - general
+      - internal
     expose:
       - 27017
     volumes:
@@ -43,7 +44,7 @@ services:
     container_name: wekan
     restart: always
     networks:
-      - general
+      - internal
     expose:
       - 8080
     environment:
@@ -62,7 +63,7 @@ services:
       - ${DOKUWIKI_STORAGE_LOCAL}/dokuwiki/data:/var/www/html/dokuwiki/data
       - ${DOKUWIKI_STORAGE_LOCAL}/dokuwiki/conf:/var/www/html/dokuwiki/conf
     networks:
-      - general
+      - internal
 
   freshrss:
     container_name: freshrss
@@ -77,7 +78,7 @@ services:
       CRON_MIN: "4,34"
       TZ: Australia/Sydney
     networks:
-      - general
+      - internal
     expose:
       - 80
     # TODO Temporary measure until I have SAN certs and/or confirm any other required fixes the issues with apps access
@@ -88,5 +89,7 @@ volumes:
   freshrss-data:
 
 networks:
-  general:
+  external:
     driver: bridge
+  internal:
+    driver: overlay
