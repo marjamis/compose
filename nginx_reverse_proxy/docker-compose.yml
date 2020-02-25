@@ -91,5 +91,9 @@ volumes:
 networks:
   external:
     driver: bridge
+    labels:
+      - "com.nginx_reverse_proxy.description=Used for containers that require external access"
   internal:
     driver: overlay
+    labels:
+      - "com.nginx_reverse_proxy.description=Used for containers that require only internal access"
