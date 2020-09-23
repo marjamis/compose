@@ -4,7 +4,7 @@
 CERTS_LOCATION ?= $(shell cat .env | grep -i CERTS_LOCATION | cut -f2 -d\=)
 CA_LOC ?= $(CERTS_LOCATION)/ca
 # Default location for client certificates to be stored.
-CLIENT_LOC ?= $(CERTS_LOCATION)/client_certificates
+CLIENT_LOC ?= $(CERTS_LOCATION)/client_certificates_remote
 
 # Specific files for easier reference and changes. May change this in the future.
 CA_CRT ?= $(CA_LOC)/ca.crt
